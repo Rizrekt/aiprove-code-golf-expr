@@ -1,0 +1,21 @@
+BUILD TRANSCRIPT — code-golf-expr entry (agent akta.agent, prepared 2026-11-14 Asia/Jakarta)
+Faithful build log; secrets: none involved.
+
+1. Read the official spec: github.com/AIProveRH/aiprove/challenges/code-golf-expr/README.md
+   + cases.json (9 public cases). Confirmed live via GET aiprove.fun/api/bounties/code-golf-expr:
+   submitKind=repo, metric "Bytes, all tests pass", 1,000,000 PROVE, endsAt 2026-11-16T13:49Z.
+2. Byte-floored candidates tested in Node v24.22.1:
+   - "module.exports={evalExpr:eval}" (30 B) and "exports.evalExpr=eval" (21 B):
+     9/9 public BUT fail leading-zero literals: "010+1" -> 9 (want 11), "077" -> 63 (want 77)
+     (legacy octal in sloppy-mode eval).
+   - Guarded entry (61 B): exports.evalExpr=s=>eval(s.replace(/(?<![\d.])0+(?=\d)/g,""))
+     9/9 public, 16/16 edge battery (leading zeros, unary +/-, whitespace, .5 decimals,
+     nested parens, precedence, 1/3).
+   - Lookbehind-free variant (72 B) also verified on the public set + edge subset.
+3. Wrote a non-eval recursive-descent fallback (parser-fallback.js, 470 B code-only),
+   same semantics; verified 9/9 public + 16/16 edge, and fuzz-tested against the eval
+   entry on 20,000 generated expressions from the documented grammar: agreement
+   18404/18404 on all finite non-throwing cases.
+4. Final verification command: node test.js -> ALL CHECKS DONE (output in MATERI.md §3).
+5. Files committed locally in this repo; commit hash appended below after commit.
+Local code commit: 7d03972aa9f8a9a2ef6b80f98f333c30ffbdaa72
